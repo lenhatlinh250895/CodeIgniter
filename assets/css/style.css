@@ -1,0 +1,40 @@
+* {
+	padding: 0px;
+	margin: 0px;
+	border: 0px;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#pages {
+	margin: 10px 0px 10px 10px;
+	font-family: Verdana, Tahoma, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	list-style: inside none;
+	float: right;
+}
+
+#pages .pageInfo {
+	padding: 0px 5px;
+	border: 0px;
+}
+
+#pages li {
+	height: 25px;
+	line-height: 25px;
+	text-align: center;
+	border: solid 1px #ccc;
+	float: left;
+	margin-left: 5px;
+}
+
+#pages .currentPage {
+	width: 40px;
+	text-align: center;
+}
+
+#pages li.goPrevious, li.goNext {
+	color: #333;
+	padding: 0px 5px;
+	cursor: pointer;
+}
