@@ -27,7 +27,7 @@
 			<div class="modal-body">
 				<div class="mess_succ" id="message"></div>
 				<div class="mess_error" id="message"></div>
-				<form action="" method="post" id="myform" class="form-horizontal">
+				<form action="" method="post" id="myform" class="form-horizontal" enctype="multipart/form-data">
 					<input type="hidden" name="id" value="0">
 					<div class="alert alert-danger" id="alert" style="display: none;">
 	
@@ -54,6 +54,12 @@
 						<label for="fullname" class="label-control col-md-4">Full Name</label>
 						<div class="col-md-8">
 							<input type="text" name="fullname" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="image" class="label-control col-md-4">Image</label>
+						<div class="col-md-8">
+							<input type="file" name="image" id="image">
 						</div>
 					</div>
 					<div class="form-group">
@@ -118,6 +124,7 @@ $(document).ready(function(){
 	}
 	load_data(1);
 
+	//chuyen tab pagination
 	$(document).on("click",".pagination li a",function(even){
 		even.preventDefault();
 		var page = $(this).data("ci-pagination-page");

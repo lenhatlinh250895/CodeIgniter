@@ -62,13 +62,33 @@ class Account extends CI_Controller
 		$this->form_validation->set_rules('password','Pass Word','required|min_length[6]|max_length[60]|trim');
 		$this->form_validation->set_rules('repassword','Re Pass','required|min_length[6]|max_length[60]|matches[password]|trim');
 		$this->form_validation->set_rules('fullname','Full Name','required|min_length[6]|max_length[60]|trim');
+		$config['upload_path'] = './uploads/';
+		$config['allowed_types'] = 'jpg|png|gif';
+		$config['encrypt_name'] = true;
+		$this->load->library('upload',$config);
+		if($this->upload->do_upload('image'))
+		{
+			$fi = $this->upload->data();
+			$array_newuser = array(
+				'image' => $fi['file_name']
+			);
+		}
+		else
+			$array_newuser = array('image' => '');
+		$array_newuser = array(
+			'username' => $this->input->post('username'),
+			'password' => $this->input->post('password'),
+			'fullname' => $this->input->post('fullname'),
+			'gioitinh' => $this->input->post('gioitinh'),
+			'level' => $this->input->post('level'),
+		);
 		if($this->form_validation->run() == FALSE)
 		{
 			echo json_encode(validation_errors());
 		}
 		else
 		{
-			$result = $this->m->addNewUser();
+			$result = $this->m->addNewUser($array_newuser);
 			$mess['type'] = 'add';
 			if($result == true)
 				$mess['success'] = true;
@@ -153,32 +173,32 @@ class Account extends CI_Controller
 		echo $output;
 	}
 
-	public function countAll()
-	{
-		$items = (int)$_GET["items"];
-		$totalitem = $this->m->countAll();
-		$page = $totalitem/$items;
-		$array_total = array("total" => 0);
-		$tam = explode(".", $page);
-		if(count($tam) > 1)
-			$page = $tam[0]+1;
-		else
-			$page = $tam[0];
-		$array_total["total"] = $page;
-		echo json_encode($array_total);
-	}
+	// public function countAll()
+	// {
+	// 	$items = (int)$_GET["items"];
+	// 	$totalitem = $this->m->countAll();
+	// 	$page = $totalitem/$items;
+	// 	$array_total = array("total" => 0);
+	// 	$tam = explode(".", $page);
+	// 	if(count($tam) > 1)
+	// 		$page = $tam[0]+1;
+	// 	else
+	// 		$page = $tam[0];
+	// 	$array_total["total"] = $page;
+	// 	echo json_encode($array_total);
+	// }
 
-	public function list()
-	{
-		$items = (int)$_POST["items"];
-		$currenpage = (int)$_POST["currentPage"];
-		$offset = ($currenpage - 1) * $items;
-		$result = $this->m->listAll($items,$offset);
-		echo json_encode($result);
-		// echo "<pre>";
-		// echo print_r($result);
-		// echo "</pre>";
-	}
+	// public function list()
+	// {
+	// 	$items = (int)$_POST["items"];
+	// 	$currenpage = (int)$_POST["currentPage"];
+	// 	$offset = ($currenpage - 1) * $items;
+	// 	$result = $this->m->listAll($items,$offset);
+	// 	echo json_encode($result);
+	// 	// echo "<pre>";
+	// 	// echo print_r($result);
+	// 	// echo "</pre>";
+	// }
 
 	public function pagination()
 	{
@@ -213,9 +233,40 @@ class Account extends CI_Controller
 		
 		$start = ($page-1)*$config["per_page"];
 
+		$result = $this->m->listAll($config["per_page"],$start);
+		$html = "";
+		$html .= '
+		<table class="tableeee table table-bordered table-responsive" style="margin-top: 20px;">
+			<tr>
+				<th>STT</th>
+				<th>Name</th>
+				<th>Full Name</th>
+				<th>Gioi Tinh</th>
+				<th>Level</th>
+				<th>Edit</th>
+				<th>Delete</th>
+			</tr>
+		';
+		$stt = $start;
+		foreach ($result as $row) {
+			$stt++;
+			$html .= ' 
+			<tr>
+				<td>'.$stt.'</td>
+				<td>'.$row->username.'</td>
+				<td>'.$row->fullname.'</td>
+				<td>'.$row->gioitinh.'</td>
+				<td>'.$row->level.'</td>
+				<td><a class="btn btn-info btnedit" data-toggle="modal" id="btnedit" data="'.$row->id.'" href="">Edit</a></td>
+				<td><a class="btndel btn btn-danger" data-toggle="modal" id="btndel" data="'.$row->id.'" href="">Delete</a>
+				</td>
+			</tr>
+			';
+		}
+		$html .= '</table>';
 		$output = array(
 			"pagination_link" => $this->pagination->create_links(),
-			'data_table'	  => $this->m->listAll($config["per_page"],$start)
+			'data_table'	  => $html
 		);
 		echo json_encode($output);
 	}

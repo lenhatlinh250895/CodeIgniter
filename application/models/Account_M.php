@@ -20,16 +20,9 @@ class Account_M extends CI_Model
 	}
 
 	//them moi user
-	public function addNewUser()
+	public function addNewUser($array_newuser)
 	{
-		$array_new_user = array(
-			'username' => $this->input->post('username'),
-			'password' => $this->input->post('password'),
-			'fullname' => $this->input->post('fullname'),
-			'gioitinh' => $this->input->post('gioitinh'),
-			'level' => $this->input->post('level'),
-		);
-		$this->db->insert($this->_table,$array_new_user);
+		$this->db->insert($this->_table,$array_newuser);
 		if($this->db->affected_rows() > 0)
 			return true;
 		else
@@ -114,40 +107,9 @@ class Account_M extends CI_Model
 
 	public function listAll($offset,$start)
 	{
-		$output = "";
 		$this->db->limit($offset,$start);
-		//return $this->db->get($this->_table)->result_array();
 		$query = $this->db->get($this->_table);
-		$output .= '
-		<table class="tableeee table table-bordered table-responsive" style="margin-top: 20px;">
-			<tr>
-				<th>STT</th>
-				<th>Name</th>
-				<th>Full Name</th>
-				<th>Gioi Tinh</th>
-				<th>Level</th>
-				<th>Edit</th>
-				<th>Delete</th>
-			</tr>
-		';
-		$stt = $start;
-		foreach ($query->result() as $row) {
-			$stt++;
-			$output .= ' 
-			<tr>
-				<td>'.$stt.'</td>
-				<td>'.$row->username.'</td>
-				<td>'.$row->fullname.'</td>
-				<td>'.$row->gioitinh.'</td>
-				<td>'.$row->level.'</td>
-				<td><a class="btn btn-info btnedit" data-toggle="modal" id="btnedit" data="'.$row->id.'" href="">Edit</a></td>
-				<td><a class="btndel btn btn-danger" data-toggle="modal" id="btndel" data="'.$row->id.'" href="">Delete</a>
-				</td>
-			</tr>
-			';
-		}
-		$output .= '</table>';
-		return $output;
+		return $query->result();
 	}
 
 	public function checkLogin()
