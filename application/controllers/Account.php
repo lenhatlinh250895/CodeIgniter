@@ -9,7 +9,7 @@ class Account extends CI_Controller
 	{
 		parent::__construct();
 		$this->load->model('Account_M','m');
-		$this->perPage = 3;
+		$this->load->library('encryption');
 	}
 
 	//trang hien thi
@@ -66,22 +66,28 @@ class Account extends CI_Controller
 		$config['allowed_types'] = 'jpg|png|gif';
 		$config['encrypt_name'] = true;
 		$this->load->library('upload',$config);
-		if($this->upload->do_upload('image'))
+		//echo json_encode($this->encryption->encrypt('mypassword'));
+		if($this->upload->do_upload('file'))
 		{
 			$fi = $this->upload->data();
 			$array_newuser = array(
-				'image' => $fi['file_name']
+				'username' => $_POST['username'],
+				'password' => $this->encryption->encrypt($_POST['password']),
+				'fullname' => $_POST['fullname'],
+				'gioitinh' => $_POST['gioitinh'],
+				'level'    => $_POST['level'],
+				'image'    => $fi['file_name']
 			);
 		}
 		else
-			$array_newuser = array('image' => '');
-		$array_newuser = array(
-			'username' => $this->input->post('username'),
-			'password' => $this->input->post('password'),
-			'fullname' => $this->input->post('fullname'),
-			'gioitinh' => $this->input->post('gioitinh'),
-			'level' => $this->input->post('level'),
-		);
+			$array_newuser = array(
+				'username' => $_POST['username'],
+				'password' => $this->encryption->encrypt($_POST['password']),
+				'fullname' => $_POST['fullname'],
+				'gioitinh' => $_POST['gioitinh'],
+				'level'    => $_POST['level'],
+				'image'    => ''
+			);
 		if($this->form_validation->run() == FALSE)
 		{
 			echo json_encode(validation_errors());
@@ -99,10 +105,16 @@ class Account extends CI_Controller
 	//xoa user
 	public function deleteUser()
 	{
-		$result = $this->m->deleteUser();
+		$id = $this->input->get('id');
+		$row = $this->m->searchUser($id);
+		$path_file = 'uploads/'.$row->image;
+		unlink($path_file);
+		$result = $this->m->deleteUser($id);
 		$mess['success'] = false;
 		if($result)
+		{
 			$mess['success'] = true;
+		}
 		echo json_encode($mess);
 	}
 
@@ -110,12 +122,14 @@ class Account extends CI_Controller
 	public function editUser()
 	{
 		$result = $this->m->editUser();
+		$result->password = $this->encryption->decrypt($result->password);
 		echo json_encode($result);
 	}
 
 	//cap nhat user
 	public function updateUser()
 	{
+		$id = $this->input->post('id');
 		$mess['success'] = false;
 		$this->load->library('form_validation');
 
@@ -123,13 +137,50 @@ class Account extends CI_Controller
 		$this->form_validation->set_rules('password','Pass Word','required|min_length[6]|max_length[60]');
 		$this->form_validation->set_rules('repassword','Re Pass','required|min_length[6]|max_length[60]|matches[password]');
 		$this->form_validation->set_rules('fullname','Full Name','required|min_length[6]|max_length[60]');
+		$config['upload_path'] = './uploads/';
+		$config['allowed_types'] = 'jpg|png|gif';
+		$config['encrypt_name'] = true;
 		if($this->form_validation->run() == TRUE)
 		{
-			$result = $this->m->updateUser();
-			$mess['type'] = 'update';
-			if($result)
-				$mess['success'] = true;
-			echo json_encode($mess);
+			if(isset($_FILES['file']['name']))
+			{
+				$this->load->library('upload',$config);
+				if($this->upload->do_upload('file'))
+				{
+					$fi = $this->upload->data();
+					$array_edit_user = array(
+						'username' => $_POST['username'],
+						'password' => $this->encryption->encrypt($_POST['password']),
+						'fullname' => $_POST['fullname'],
+						'gioitinh' => $_POST['gioitinh'],
+						'level'    => $_POST['level'],
+						'image'	   => $fi['file_name']
+					);
+					$row = $this->m->searchUser($id);
+					$path_file = 'uploads/'.$row->image;
+					unlink($path_file);
+					$result = $this->m->updateUser($array_edit_user);
+					$mess['type'] = 'update';
+					if($result)
+						$mess['success'] = true;
+					echo json_encode($mess);
+				}
+			}
+			else
+			{
+				$array_edit_user = array(
+					'username' => $_POST['username'],
+					'password' => $this->encryption->encrypt($_POST['password']),
+					'fullname' => $_POST['fullname'],
+					'gioitinh' => $_POST['gioitinh'],
+					'level'    => $_POST['level'],
+				);
+				$result = $this->m->updateUser($array_edit_user);
+				$mess['type'] = 'update';
+				if($result)
+					$mess['success'] = true;
+				echo json_encode($mess);
+			}
 		}
 		else
 		{
@@ -149,6 +200,7 @@ class Account extends CI_Controller
 					   	   <tr>
 					   	       <th>User Name</th>
 					   	       <th>Full Name</th>
+					   	       <th>Image</th>
 					   	       <th>Gioi Tinh</th>
 					   	       <th>Level</th>
 					   	   </tr>';
@@ -160,6 +212,7 @@ class Account extends CI_Controller
 				$output .= '<tr>
 					   	       <td>'.$row["username"].'</td>
 					   	       <td>'.$row["fullname"].'</td>
+					   	       <td><img src="'.base_url().'uploads/'.$row["image"].'" height="100px"></td>
 					   	       <td>'.$row["gioitinh"].'</td>
 					   	       <td>'.$lev.'</td>
 					   	   </tr>';
@@ -241,6 +294,7 @@ class Account extends CI_Controller
 				<th>STT</th>
 				<th>Name</th>
 				<th>Full Name</th>
+				<th>Image</th>
 				<th>Gioi Tinh</th>
 				<th>Level</th>
 				<th>Edit</th>
@@ -255,6 +309,7 @@ class Account extends CI_Controller
 				<td>'.$stt.'</td>
 				<td>'.$row->username.'</td>
 				<td>'.$row->fullname.'</td>
+				<td><img src="'.base_url().'uploads/'.$row->image.'" height="100px"></td>
 				<td>'.$row->gioitinh.'</td>
 				<td>'.$row->level.'</td>
 				<td><a class="btn btn-info btnedit" data-toggle="modal" id="btnedit" data="'.$row->id.'" href="">Edit</a></td>

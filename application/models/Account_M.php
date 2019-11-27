@@ -45,10 +45,20 @@ class Account_M extends CI_Model
 
 	}
 
-	//xoa user
-	public function deleteUser()
+	//search user theo id
+	public function searchUser($id)
 	{
-		$id = $this->input->get('id');
+		$this->db->where('id',$id);
+		$query = $this->db->get($this->_table);
+		if($query->num_rows() > 0)
+			return $query->row();
+		else
+			return false;
+	}
+
+	//xoa user
+	public function deleteUser($id)
+	{
 		$this->db->where('id',$id);
 		$this->db->delete($this->_table);
 		if($this->db->affected_rows() > 0)
@@ -69,16 +79,9 @@ class Account_M extends CI_Model
 	}
 
 	//cap nhat user
-	public function updateUser()
+	public function updateUser($array_edit_user)
 	{
 		$id = $this->input->post('id');
-		$array_edit_user = array(
-			'username' => $this->input->post('username'),
-			'password' => $this->input->post('password'),
-			'fullname' => $this->input->post('fullname'),
-			'gioitinh' => $this->input->post('gioitinh'),
-			'level' => $this->input->post('level'),
-		);
 		$this->db->where('id',$id);
 		$this->db->update($this->_table,$array_edit_user);
 		//if($this->db->affected_rows() > 0)
@@ -90,7 +93,7 @@ class Account_M extends CI_Model
 	public function search()
 	{
 		$var_text = $this->input->post('var_text');
-		$this->db->select('username,fullname,gioitinh,level');
+		$this->db->select('username,fullname,gioitinh,level,image');
 		$this->db->like('username',$var_text);
 		$query = $this->db->get($this->_table);
 		if($query->num_rows() > 0)
@@ -105,6 +108,8 @@ class Account_M extends CI_Model
 		return $this->db->count_all($this->_table);
 	}
 
+
+	//Hien thi danh sach user theo pagination
 	public function listAll($offset,$start)
 	{
 		$this->db->limit($offset,$start);
@@ -112,18 +117,24 @@ class Account_M extends CI_Model
 		return $query->result();
 	}
 
+
+	//kiem tra dang nhap
 	public function checkLogin()
 	{
 		$username = $this->input->post("username");
 		$password = $this->input->post("password");
 		$this->db->where("username",$username);
-		$this->db->where("password",$password);
-		$this->db->where("level","2");
 		$query = $this->db->get($this->_table);
 		if($query->num_rows() > 0)
 		{
-			$this->session->set_userdata('user',$username);
-			return true;
+			$user = $query->row();
+			$pass = $this->encryption->decrypt($user->password);
+			if($pass == $password && $user->level == "2")
+			{
+				$this->session->set_userdata('user',$username);
+				return true;
+			}
+			return false;
 		}
 		return false;
 	}

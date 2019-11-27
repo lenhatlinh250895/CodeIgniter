@@ -14,7 +14,7 @@
 <body>
 <div class="navbar navbar-default">
 	<div class="container">
-		<h2><span class="glyphicon glyphicon-home"></span>&nbsp;Welcome to my Application No 20k</h2>
+		<h2><span class="glyphicon glyphicon-home"></span>&nbsp;Welcome to my Application</h2>
 		<?php if (!empty($this->session->userdata('user'))): ?>
 		<span class="btn btn-primary" id="btnlogout" align="right">
 			Logout	

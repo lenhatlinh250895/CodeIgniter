@@ -58,6 +58,9 @@
 					</div>
 					<div class="form-group">
 						<label for="image" class="label-control col-md-4">Image</label>
+						<div class="showimg col-md-8" >
+							<img height="100px" name="showimage" src="" >
+						</div>
 						<div class="col-md-8">
 							<input type="file" name="image" id="image">
 						</div>
@@ -137,17 +140,26 @@ $(document).ready(function(){
 		$('#mymodal').find('.modal-title').text('Add New User');
 		$('#myform').attr('action','http://localhost/account/Account/addNewUser');
 	});
+
 	//them moi va update user
 	$('#btnsave').on('click',function(){
 		var url = $('#myform').attr('action');
-		var data = $('#myform').serialize();
+		//var data = $('#myform').serialize();
+		var file_data = $('#image').prop('files')[0];
+		var form_data = new FormData(document.getElementById('myform'));
+		form_data.append('file',file_data);
+		console.log(file_data);
+		console.log(form_data);
 		$.ajax({
-			type: 'ajax',
+			type: 'post',
 			url: url,
-			data: data,
-			method: 'post',
+			data: form_data,
+			cache: false,
+			processData: false,
+			contentType: false,
 			dataType: 'json',
 			success: function(response){
+				console.log(response);
 				if(response.success)
 				{
 					$('#mymodal').modal('hide');
@@ -176,7 +188,7 @@ $(document).ready(function(){
 		console.log(lastid);
 		console.log(id);
 		$('#deletemodal').modal('show');
-		$('#btndelete').unbind().click(function(){
+		$('#btndelete').click(function(){
 			$.ajax({
 				type: 'ajax',
 				method: 'get',
@@ -186,6 +198,7 @@ $(document).ready(function(){
 				dataType: 'json',
 				success: function(response)
 				{
+					console.log(response);
 					if(response.success)
 					{
 						$('#deletemodal').modal('hide');
@@ -232,6 +245,8 @@ $(document).ready(function(){
 				$('input[name=fullname]').val(data.fullname);
 				$('input[name=password]').val(data.password);
 				$('input[name=repassword]').val(data.password);
+				var src = '<?php echo base_url(); ?>uploads/'+data.image;
+				$('img[name=showimage]').attr('src',src);
 				if(data.gioitinh == 'Nam')
 				{
 					$('#nam').attr('selected','true');
@@ -280,6 +295,13 @@ $(document).ready(function(){
 			$('#result').html('');
 		}
 	});
+
+	//change hinh update
+	// $('input[type=file]').change(function(){
+	// 	var file_data = $('#image').prop('files')[0];
+	// 	console.log(file_data);
+		
+	// });
 });
 </script>
 
