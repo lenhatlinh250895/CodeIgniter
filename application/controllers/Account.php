@@ -76,7 +76,8 @@ class Account extends CI_Controller
 				'fullname' => $_POST['fullname'],
 				'gioitinh' => $_POST['gioitinh'],
 				'level'    => $_POST['level'],
-				'image'    => $fi['file_name']
+				'image'    => $fi['file_name'],
+				'roleid'   => $_POST['level']
 			);
 		}
 		else
@@ -86,7 +87,8 @@ class Account extends CI_Controller
 				'fullname' => $_POST['fullname'],
 				'gioitinh' => $_POST['gioitinh'],
 				'level'    => $_POST['level'],
-				'image'    => ''
+				'image'    => '',
+				'roleid'   => $_POST['level']
 			);
 		if($this->form_validation->run() == FALSE)
 		{
@@ -154,7 +156,9 @@ class Account extends CI_Controller
 						'fullname' => $_POST['fullname'],
 						'gioitinh' => $_POST['gioitinh'],
 						'level'    => $_POST['level'],
-						'image'	   => $fi['file_name']
+						'image'	   => $fi['file_name'],
+						'roleid'   => $_POST['level']
+
 					);
 					$row = $this->m->searchUser($id);
 					$path_file = 'uploads/'.$row->image;
@@ -174,6 +178,7 @@ class Account extends CI_Controller
 					'fullname' => $_POST['fullname'],
 					'gioitinh' => $_POST['gioitinh'],
 					'level'    => $_POST['level'],
+					'roleid'   => $_POST['level']
 				);
 				$result = $this->m->updateUser($array_edit_user);
 				$mess['type'] = 'update';
@@ -311,7 +316,7 @@ class Account extends CI_Controller
 				<td>'.$row->fullname.'</td>
 				<td><img src="'.base_url().'uploads/'.$row->image.'" height="100px"></td>
 				<td>'.$row->gioitinh.'</td>
-				<td>'.$row->level.'</td>
+				<td>'.$row->role.'</td>
 				<td><a class="btn btn-info btnedit" data-toggle="modal" id="btnedit" data="'.$row->id.'" href="">Edit</a></td>
 				<td><a class="btndel btn btn-danger" data-toggle="modal" id="btndel" data="'.$row->id.'" href="">Delete</a>
 				</td>
@@ -326,6 +331,7 @@ class Account extends CI_Controller
 		echo json_encode($output);
 	}
 
+	//chuyen huong khi da dang nhap
 	public function isLoggedIn()
 	{
 		$isLoggedIn = $this->session->userdata('user');
@@ -333,6 +339,8 @@ class Account extends CI_Controller
 			redirect(base_url().'Account/login');
 		}
 	}
+
+	//chuyen huong khi chua dang nhap
 	public function isLoggedOut()
 	{
 		$isLoggedIn = $this->session->userdata('user');
@@ -341,6 +349,7 @@ class Account extends CI_Controller
 		}
 	}
 
+	//kiem tra dang nhap
 	public function checkLogin()
 	{
 		$this->load->library('form_validation');
@@ -361,10 +370,23 @@ class Account extends CI_Controller
 		}
 	}
 
+	//dang xuat
 	public function logout()
 	{
 		$this->session->unset_userdata('user');
 		echo 1;
+	}
+
+	//load level
+	public function loadLevel()
+	{
+		$result = $this->m->loadLevel();
+		$html = "";
+		foreach($result as $row)
+		{
+			$html .= '<option id="'.$row->role.'" value="'.$row->roleid.'" >'.$row->role.'</option>';
+		}
+		echo json_encode($html);
 	}
 }
 ?>

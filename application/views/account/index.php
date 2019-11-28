@@ -59,17 +59,17 @@
 					<div class="form-group">
 						<label for="image" class="label-control col-md-4">Image</label>
 						<div class="showimg col-md-8" >
-							<img height="100px" name="showimage" src="" >
+							<img height="100px" name="showimage" id="showimage" src="" >
 						</div>
 						<div class="col-md-8">
-							<input type="file" name="image" id="image">
+							<input type="file" onchange="document.getElementById('showimage').src = window.URL.createObjectURL(this.files[0])" name="image" id="image">
 						</div>
 					</div>
 					<div class="form-group">
 						<label for="gioitinh" class="label-control col-md-4">Gioi Tinh</label>
 						<div class="col-md-8">
 							<select name="gioitinh" id="gioitinh">
-								<option id="nam" value="Nam" selected>Nam</option>
+								<option id="nam" value="Nam" selected >Nam</option>
 								<option id="nu" value="Nu">Nữ</option>
 							</select>
 						</div>
@@ -78,8 +78,8 @@
 						<label for="level" class="label-control col-md-4">Level</label>
 						<div class="col-md-8">
 							<select name="level" id="level">
-								<option id="member" value="1" selected>Member</option>
-								<option id="admin" value="2">Admin</option>
+								<option id="member" value="1" selected>System Administrator</option>
+								<option id="admin" value="2">Manager</option>
 							</select>
 						</div>
 					</div>
@@ -139,6 +139,15 @@ $(document).ready(function(){
 		$('#mymodal').modal('show');
 		$('#mymodal').find('.modal-title').text('Add New User');
 		$('#myform').attr('action','http://localhost/account/Account/addNewUser');
+		$.ajax({
+			type: 'post',
+			url: '<?php echo base_url(); ?>/Account/loadLevel',
+			dataType: 'json',
+			success: function(data){
+				console.log(data);
+				$('#level').html(data);
+			},
+		});
 	});
 
 	//them moi va update user
@@ -297,11 +306,9 @@ $(document).ready(function(){
 	});
 
 	//change hinh update
-	// $('input[type=file]').change(function(){
-	// 	var file_data = $('#image').prop('files')[0];
-	// 	console.log(file_data);
-		
-	// });
+	$('input[type=file]').change(function(){
+		$('#imageShow').attr('src',window.URL.createObjectURL(this.files[0]));
+	});
 });
 </script>
 

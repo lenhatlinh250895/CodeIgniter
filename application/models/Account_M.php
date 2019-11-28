@@ -112,8 +112,11 @@ class Account_M extends CI_Model
 	//Hien thi danh sach user theo pagination
 	public function listAll($offset,$start)
 	{
+		$this->db->select('user.id,user.username,user.fullname,user.image,user.gioitinh,user.level,roles.role');
+		$this->db->from('user');
+		$this->db->join('roles','roles.roleid = user.roleid');
 		$this->db->limit($offset,$start);
-		$query = $this->db->get($this->_table);
+		$query = $this->db->get();
 		return $query->result();
 	}
 
@@ -123,13 +126,16 @@ class Account_M extends CI_Model
 	{
 		$username = $this->input->post("username");
 		$password = $this->input->post("password");
+		$this->db->select('user.username,user.password,user.image,user.roleid,roles.role');
+		$this->db->from('user');
+		$this->db->join('roles','roles.roleid = user.roleid');
 		$this->db->where("username",$username);
-		$query = $this->db->get($this->_table);
+		$query = $this->db->get();
 		if($query->num_rows() > 0)
 		{
 			$user = $query->row();
 			$pass = $this->encryption->decrypt($user->password);
-			if($pass == $password && $user->level == "2")
+			if($pass == $password && $user->roleid == "1")
 			{
 				$this->session->set_userdata('user',$username);
 				return true;
@@ -137,6 +143,12 @@ class Account_M extends CI_Model
 			return false;
 		}
 		return false;
+	}
+
+	//load level
+	public function loadLevel()
+	{
+		return $this->db->get('roles')->result();
 	}
 }
 ?>
